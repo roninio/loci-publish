@@ -1,0 +1,117 @@
+{
+  "skill_name": "memory-report",
+  "description": "Tests that the memory-report skill correctly runs asm-analyze memmap, interprets the JSON output, and reports section breakdowns, ROM/RAM summaries, top consumers, delta comparisons, and optional region budgets. Primary test ELF is $LOCI_TEST_BLE_ROOT/CC2340R5/basic_ble.out.",
+  "note": "Set $LOCI_TEST_BLE_ROOT to your local BLE project root before running.",
+
+  "evals": [
+
+    {
+      "id": "mr-1",
+      "category": "single-elf-report",
+      "prompt": "Analyze the ROM/RAM memory usage of $LOCI_TEST_BLE_ROOT/examples/rtos/LP_EM_CC2340R5/ble5stack/basic_ble/freertos/ticlang/basic_ble.out. No map file — just show me the section breakdown, summary, and top consumers. Session says Target: armv7e-m, Compiler: arm-none-eabi-gcc, LOCI target: armv7e-m.",
+      "expected_output": "Runs asm-analyze memmap with --elf-path pointing to basic_ble.out. Reports a section breakdown table with section names, addresses, sizes, types, and memory regions. Reports ROM/RAM summary totals with code/rodata/data/bss breakdown. Reports top ROM consumers (functions) and top RAM consumers (variables) by size. Does not report memory region budgets since no map file was provided (memory_regions is null).",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Response runs asm-analyze memmap with --elf-path pointing to basic_ble.out",
+          "description": "Must use the memmap subcommand with the correct ELF path"
+        },
+        {
+          "text": "Response includes a section breakdown with section names, sizes, types (code/rodata/data/bss), and memory regions (ROM/RAM)",
+          "description": "The section table is the core structural output of a memory report"
+        },
+        {
+          "text": "Response includes a ROM/RAM summary with total byte counts and a breakdown into code, rodata, data, and bss",
+          "description": "Summary totals are required for quick assessment of memory usage"
+        },
+        {
+          "text": "Response lists top ROM consumers (functions by size) and top RAM consumers (variables by size)",
+          "description": "Top consumers help identify optimization targets"
+        },
+        {
+          "text": "Response does NOT show memory region budgets or usage percentages",
+          "description": "No map file was provided, so region budget information should be absent"
+        }
+      ]
+    },
+
+    {
+      "id": "mr-2",
+      "category": "single-elf-with-map",
+      "prompt": "Show me the memory usage of $LOCI_TEST_BLE_ROOT/examples/rtos/LP_EM_CC2340R5/ble5stack/basic_ble/freertos/ticlang/basic_ble.out with the linker map file at $LOCI_TEST_BLE_ROOT/examples/rtos/LP_EM_CC2340R5/ble5stack/basic_ble/freertos/ticlang/basic_ble.map. I want to see how much of each memory region is used. Session says Target: armv7e-m, Compiler: arm-none-eabi-gcc, LOCI target: armv7e-m.",
+      "expected_output": "Runs asm-analyze memmap with --elf-path pointing to basic_ble.out and --map-file pointing to basic_ble.map. Reports section breakdown, ROM/RAM summary, and top consumers as in a normal report. Additionally reports memory region budgets showing per-region used bytes, total bytes, and usage percentage. If the map file is not found or cannot be parsed, the report still completes but notes that memory regions are unavailable.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Response runs asm-analyze memmap with --elf-path and --map-file flags",
+          "description": "Both the ELF path and map file path must be passed to the command"
+        },
+        {
+          "text": "Response includes the standard section breakdown and ROM/RAM summary",
+          "description": "Map file should add to the report, not replace the base sections"
+        },
+        {
+          "text": "Response includes memory region budgets with used/total bytes and usage percentage per region, OR notes that the map file was not found or could not be parsed",
+          "description": "Region budgets are the key added value of the map file; graceful fallback if absent"
+        }
+      ]
+    },
+
+    {
+      "id": "mr-3",
+      "category": "delta-comparison",
+      "prompt": "Compare memory usage between two builds. The new binary is $LOCI_TEST_BLE_ROOT/examples/rtos/LP_EM_CC2340R5/ble5stack/basic_ble/freertos/ticlang/basic_ble.out and the old binary is $LOCI_TEST_BLE_ROOT/examples/rtos/LP_EM_CC2340R5/ble5stack/data_stream/freertos/ticlang/data_stream.out. Show me what changed. Session says Target: armv7e-m, Compiler: arm-none-eabi-gcc, LOCI target: armv7e-m.",
+      "expected_output": "Runs asm-analyze memmap with --elf-path pointing to basic_ble.out and --comparing-elf-path pointing to data_stream.out. Reports section deltas showing before/after/delta sizes for each section. Reports ROM/RAM summary deltas with total changes and percentages. Reports symbol-level deltas showing added, removed, or changed symbols sorted by delta size. Does not report memory region budget deltas since no map file was provided.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Response runs asm-analyze memmap with --elf-path and --comparing-elf-path flags",
+          "description": "Delta mode requires both ELF paths to compare"
+        },
+        {
+          "text": "Response shows section-level deltas with before, after, and delta sizes",
+          "description": "Per-section comparison is the foundation of a delta report"
+        },
+        {
+          "text": "Response shows ROM/RAM summary deltas with total byte changes",
+          "description": "Summary deltas give the high-level impact of the change"
+        },
+        {
+          "text": "Response shows symbol-level deltas identifying added, removed, or changed symbols",
+          "description": "Symbol deltas pinpoint exactly which functions/variables grew or shrank"
+        },
+        {
+          "text": "Response does NOT show memory region budget deltas",
+          "description": "No map file was provided, so region budget comparison should be absent"
+        }
+      ]
+    },
+
+    {
+      "id": "mr-4",
+      "category": "object-file-report",
+      "prompt": "I have a compiled object file at build/sensor_driver.o. Analyze its memory usage. Session says Target: armv7e-m, Compiler: arm-none-eabi-gcc, LOCI target: armv7e-m.",
+      "expected_output": "Runs asm-analyze memmap with --elf-path pointing to build/sensor_driver.o. Recognizes it as a relocatable object file (not a linked executable). Reports section sizes and types but notes that addresses are zero-based (no linker placement). Reports ROM and RAM estimates. Notes that memory regions are not available for object files. Does not attempt to use a map file.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Response runs asm-analyze memmap with --elf-path pointing to the .o file",
+          "description": "The memmap subcommand handles both linked ELFs and relocatable .o files"
+        },
+        {
+          "text": "Response identifies the file as relocatable and notes that addresses are zero-based or that memory regions are not available",
+          "description": "Object files have no linked addresses and no memory region assignment"
+        },
+        {
+          "text": "Response reports section sizes and ROM/RAM estimates",
+          "description": "Even without linking, section sizes provide useful ROM/RAM estimates"
+        },
+        {
+          "text": "Response does NOT pass --map-file or report memory region budgets",
+          "description": "Map files are not applicable to unlinked object files"
+        }
+      ]
+    }
+
+  ]
+}

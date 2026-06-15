@@ -1,0 +1,6 @@
+# Pinned runtime dependencies for LOCI venv.
+# Update versions here, then run setup/setup.sh or restart the session.
+loci-service-asmslicer==1.0.14
+unicorn==2.1.4
+pandas==3.0.2
+pydot==4.0.1

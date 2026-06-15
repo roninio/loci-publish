@@ -1,0 +1,108 @@
+{
+  "skill_name": "stack-depth",
+  "description": "Tests that the stack depth skill correctly runs asm-analyze stack-depth, interprets the JSON output, and reports worst-case depth, call paths, per-function frames, warnings, and optional budget verdicts. All functions are compiled into $LOCI_TEST_BLE_ROOT/CC2340R5/basic_ble.out.",
+  "note": "Set $LOCI_TEST_BLE_ROOT to your local BLE project root before running.",
+
+  "evals": [
+
+    {
+      "id": "sd-1",
+      "category": "full-elf-entry-function",
+      "prompt": "Analyze the stack depth for GAPBondMgr_ProcessEvent in $LOCI_TEST_BLE_ROOT/examples/rtos/LP_EM_CC2340R5/ble5stack/basic_ble/freertos/ticlang/basic_ble.out. No stack budget — just show me the worst-case depth and the call path.",
+      "expected_output": "Runs asm-analyze stack-depth with --elf-path and --entry-functions GAPBondMgr_ProcessEvent. Reports worst-case depth in bytes, the worst-case call path as a chain of function names, average depth, and per-function frame sizes along the worst path. Does not report a verdict since no budget was provided.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Response runs asm-analyze stack-depth with --elf-path pointing to basic_ble.out and --entry-functions GAPBondMgr_ProcessEvent",
+          "description": "Must use the stack-depth subcommand with the correct entry function"
+        },
+        {
+          "text": "Response reports a worst-case depth in bytes (a specific number, not fabricated)",
+          "description": "The core output: total accumulated stack bytes along the deepest path"
+        },
+        {
+          "text": "Response shows a worst-case call path as a chain of function names (more than one function)",
+          "description": "The path must show the actual chain from entry to deepest leaf"
+        },
+        {
+          "text": "Response reports per-function frame sizes for functions along the worst path",
+          "description": "Each function in the path should show its individual frame contribution"
+        },
+        {
+          "text": "Response does NOT report a pass/fail verdict or usage percentage",
+          "description": "No budget was provided so no threshold check should appear"
+        }
+      ]
+    },
+
+    {
+      "id": "sd-2",
+      "category": "full-elf-with-budget",
+      "prompt": "Run stack depth analysis on GAPBondMgr_ProcessEvent in $LOCI_TEST_BLE_ROOT/examples/rtos/LP_EM_CC2340R5/ble5stack/basic_ble/freertos/ticlang/basic_ble.out with a stack budget of 768 bytes and a 50% threshold.",
+      "expected_output": "Runs asm-analyze stack-depth with --elf-path, --entry-functions, --stack-budget 768, and --threshold 50. Reports worst-case depth, usage as a percentage of 768 bytes, and a PASS or FAIL verdict against the 50% threshold (384 bytes). Also reports the worst-case path and per-function frames.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Response runs asm-analyze stack-depth with --stack-budget 768 and --threshold 50",
+          "description": "Budget and threshold flags must be passed to enable the verdict"
+        },
+        {
+          "text": "Response reports usage as a percentage of the 768-byte budget",
+          "description": "Usage percentage is required when a budget is provided"
+        },
+        {
+          "text": "Response includes a PASS or FAIL verdict",
+          "description": "The verdict compares worst-case depth against 50% of 768 bytes (384 bytes)"
+        },
+        {
+          "text": "Response shows the worst-case call path and per-function frame sizes",
+          "description": "Full reporting is still required alongside the verdict"
+        }
+      ]
+    },
+
+    {
+      "id": "sd-3",
+      "category": "multi-function",
+      "prompt": "Analyze stack depth for all root functions in $LOCI_TEST_BLE_ROOT/examples/rtos/LP_EM_CC2340R5/ble5stack/basic_ble/freertos/ticlang/basic_ble.out. Don't specify entry functions — let the tool auto-detect them.",
+      "expected_output": "Runs asm-analyze stack-depth with --elf-path but without --entry-functions, letting the tool auto-detect root functions. Reports per-function results for multiple entry points, each with worst-case depth, path, and frame sizes.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Response runs asm-analyze stack-depth without --entry-functions to auto-detect roots",
+          "description": "Auto-detection mode should be used when no entry functions are specified"
+        },
+        {
+          "text": "Response reports results for more than one function",
+          "description": "A real ELF has multiple root functions; the tool should find and report them"
+        },
+        {
+          "text": "Each reported function has a worst-case depth and path",
+          "description": "Per-function reporting is required even in multi-function mode"
+        }
+      ]
+    },
+
+    {
+      "id": "sd-4",
+      "category": "recursion-warning",
+      "prompt": "Analyze stack depth for osal_msg_send in $LOCI_TEST_BLE_ROOT/examples/rtos/LP_EM_CC2340R5/ble5stack/basic_ble/freertos/ticlang/basic_ble.out. I suspect there may be recursive calls in the chain. Use --max-recursion-depth 3.",
+      "expected_output": "Runs asm-analyze stack-depth with --entry-functions osal_msg_send and --max-recursion-depth 3. If recursion is detected, reports a warning about the recursive call and notes the depth is bounded to 3 iterations. If no recursion is found, reports the depth normally. Either way, the tool should handle the flag and report clearly.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Response runs asm-analyze stack-depth with --max-recursion-depth 3",
+          "description": "The recursion depth flag must be passed through"
+        },
+        {
+          "text": "Response reports the worst-case depth and path for osal_msg_send",
+          "description": "Core analysis must complete regardless of recursion"
+        },
+        {
+          "text": "If recursion is detected, response mentions it explicitly as a warning",
+          "description": "Recursion warnings are critical for stack safety — they must be surfaced"
+        }
+      ]
+    }
+  ]
+}

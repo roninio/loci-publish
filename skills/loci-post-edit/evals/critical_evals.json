@@ -1,0 +1,144 @@
+{
+  "skill_name": "loci-post-edit",
+  "evals": [
+    {
+      "id": "pe-7",
+      "should_trigger": true,
+      "category": "invoke-post-edit-connection-getconnhandle",
+      "grading_mode": "bash",
+      "prompt": "I added index-range validation to Connection_getConnhandle in $LOCI_TEST_BLE_ROOT/examples/rtos/LP_EM_CC2340R53/ble5stack/basic_ble_profiles/app/app_connection.c so it returns 0xFFFF when the index is out of bounds. Pre-edit object: $LOCI_TEST_BLE_ROOT/.loci-build/cortexm/app_connection_before.o, post-edit object: $LOCI_TEST_BLE_ROOT/.loci-build/cortexm/app_connection_after.o. The binary is at $LOCI_TEST_BLE_ROOT/CC2340R5/basic_ble.out. Session context: Target: armv7e-m, Compiler: arm-none-eabi-gcc, LOCI target: armv7e-m. Analyze the change.",
+      "expected_output": "Runs diff-elfs on app_connection_before.o vs app_connection_after.o to identify Connection_getConnhandle as modified. Extracts assembly from both pre and post artifacts, calls the LOCI API for timing on both, then emits a Post-Edit report with Before/After/Diff columns for happy path, worst path, and energy. Includes a Control Flow section from the post-edit CFG.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Response includes a '## Post-Edit:' section header",
+          "description": "'Analyze the change' with real pre/post .o artifacts must trigger the loci-post-edit skill"
+        },
+        {
+          "text": "Post-Edit block contains 'Happy path:' line",
+          "description": "Execution timing report must include the happy path metric"
+        },
+        {
+          "text": "Post-Edit block contains 'Worst path:' line",
+          "description": "Execution timing report must include the worst path metric"
+        },
+        {
+          "text": "Post-Edit block contains 'Diff' column or a % diff value",
+          "description": "When a pre-edit artifact is present, % diff must be computed and shown for all metrics"
+        },
+        {
+          "text": "Response includes a '### Control Flow' section",
+          "description": "CFG analysis must appear for the modified function as required by SKILL.md Step 5"
+        }
+      ]
+    },
+    {
+      "id": "pe-8",
+      "should_trigger": true,
+      "category": "invoke-post-edit-clockp-walkqueuedynamic",
+      "grading_mode": "bash",
+      "prompt": "I optimised the tick-distance calculation in ClockP_walkQueueDynamic in $LOCI_TEST_BLE_ROOT/simplelink-lowpower-f3-sdk/kernel/freertos/dpl/ClockPLPF3_freertos.c to avoid redundant subtraction on the hot path. Pre-edit object: $LOCI_TEST_BLE_ROOT/.loci-build/cortexm/clock_before.o, post-edit object: $LOCI_TEST_BLE_ROOT/.loci-build/cortexm/clock_after.o. The binary is at $LOCI_TEST_BLE_ROOT/CC2340R5/basic_ble.out. Session context: Target: armv7e-m, Compiler: arm-none-eabi-gcc, LOCI target: armv7e-m. Measure the edit.",
+      "expected_output": "Runs diff-elfs on clock_before.o vs clock_after.o to identify ClockP_walkQueueDynamic as modified. Extracts assembly from both artifacts, calls the LOCI API for timing on pre and post, and emits a Post-Edit report with Before/After/Diff for happy path, worst path, and energy. Includes a Control Flow section.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Response includes a '## Post-Edit:' section header",
+          "description": "'Measure the edit' with real clock .o artifacts must trigger the loci-post-edit skill"
+        },
+        {
+          "text": "Post-Edit block contains 'Happy path:' line",
+          "description": "Execution timing report must include the happy path metric"
+        },
+        {
+          "text": "Post-Edit block contains 'Diff' column or a % diff value",
+          "description": "When a pre-edit artifact is present, % diff must be shown"
+        },
+        {
+          "text": "Response includes a '### Control Flow' section",
+          "description": "CFG analysis must appear for the modified function"
+        }
+      ]
+    },
+    {
+      "id": "pe-9",
+      "should_trigger": true,
+      "category": "invoke-post-edit-gattservapp-readattr",
+      "grading_mode": "bash",
+      "prompt": "I added a read-permission check at the top of GATTServApp_ReadAttr in $LOCI_TEST_BLE_ROOT/simplelink-lowpower-f3-sdk/source/ti/ble5stack_flash/host/gattservapp_util.c that returns ATT_ERR_READ_NOT_PERMITTED immediately when the attribute has no read permission. Pre-edit object: $LOCI_TEST_BLE_ROOT/.loci-build/cortexm/gatt_before.o, post-edit object: $LOCI_TEST_BLE_ROOT/.loci-build/cortexm/gatt_after.o. The binary is at $LOCI_TEST_BLE_ROOT/CC2340R5/basic_ble.out. Session context: Target: armv7e-m, Compiler: arm-none-eabi-gcc, LOCI target: armv7e-m. Compare before and after.",
+      "expected_output": "Runs diff-elfs on gatt_before.o vs gatt_after.o to identify GATTServApp_ReadAttr as modified. Extracts assembly from both, calls the LOCI API for pre and post timing, emits a Post-Edit report with Before/After/Diff columns for happy path, worst path, and energy, and a Control Flow section.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Response includes a '## Post-Edit:' section header",
+          "description": "'Compare before and after' with gatt .o artifacts must trigger the loci-post-edit skill"
+        },
+        {
+          "text": "Post-Edit block contains 'Happy path:' line",
+          "description": "Execution timing report must include the happy path metric"
+        },
+        {
+          "text": "Post-Edit block contains 'Diff' column or a % diff value",
+          "description": "When a pre-edit artifact is present, % diff must be computed and shown"
+        },
+        {
+          "text": "Response includes a '### Control Flow' section",
+          "description": "CFG analysis must appear for the modified function as required by SKILL.md Step 5"
+        }
+      ]
+    },
+    {
+      "id": "pe-10",
+      "should_trigger": true,
+      "category": "invoke-post-edit-appmain-no-pre-edit",
+      "grading_mode": "bash",
+      "prompt": "I just added BLE address-mode selection logic inside appMain in $LOCI_TEST_BLE_ROOT/examples/rtos/LP_EM_CC2340R53/ble5stack/basic_ble_profiles/app/app_main.c. I only have the new compiled object — there is no previous version. Post-edit object: $LOCI_TEST_BLE_ROOT/.loci-build/cortexm/app_main_after.o. The binary is at $LOCI_TEST_BLE_ROOT/CC2340R5/basic_ble.out. Session context: Target: armv7e-m, Compiler: arm-none-eabi-gcc, LOCI target: armv7e-m. Post-edit analysis please.",
+      "expected_output": "Detects that no pre-edit artifact is provided. Treats appMain, App_StackInitDoneHandler, and criticalErrorHandler as added functions. Extracts assembly from the post artifact only, calls the LOCI API for absolute timing, and emits a Post-Edit report with absolute happy path, worst path, and energy values (no % diff). Notes '(no pre-edit artifact — showing absolute values only)' in the report.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Response includes a '## Post-Edit:' section header",
+          "description": "Post-edit analysis with no pre-edit artifact must still trigger the skill and emit a report"
+        },
+        {
+          "text": "Post-Edit block contains 'Happy path:' line",
+          "description": "Absolute timing report must include the happy path metric"
+        },
+        {
+          "text": "Response notes '(no pre-edit artifact' or 'absolute values only'",
+          "description": "When no pre-edit artifact exists, the report must note that only absolute values are shown and no % diff is computed"
+        },
+        {
+          "text": "Response does NOT contain a 'Diff' column or % diff value in the timing table",
+          "description": "Without a pre-edit artifact there is nothing to diff against — no percentage should appear"
+        }
+      ]
+    },
+    {
+      "id": "pe-11",
+      "should_trigger": true,
+      "category": "invoke-post-edit-connection-conneventhandler",
+      "grading_mode": "bash",
+      "prompt": "I reworked Connection_ConnEventHandler in $LOCI_TEST_BLE_ROOT/examples/rtos/LP_EM_CC2340R53/ble5stack/basic_ble_profiles/app/app_connection.c to handle the new BLEAPPUTIL_CONN_UPDATE_AFTER_PARAM_UPDATE event type. Pre-edit object: $LOCI_TEST_BLE_ROOT/.loci-build/cortexm/app_connection_before.o, post-edit object: $LOCI_TEST_BLE_ROOT/.loci-build/cortexm/app_connection_after_new.o. The binary is at $LOCI_TEST_BLE_ROOT/CC2340R5/basic_ble.out. Session context: Target: armv7e-m, Compiler: arm-none-eabi-gcc, LOCI target: armv7e-m. Run post-edit analysis.",
+      "expected_output": "Runs diff-elfs on app_connection_before.o vs app_connection_after_new.o. Identifies Connection_ConnEventHandler (and any other changed functions) as modified or added. Extracts assembly from pre and post, calls the LOCI API for timing on both, and emits a Post-Edit report with Before/After/Diff for happy path, worst path, and energy. Includes a Control Flow section derived from the post-edit CFG showing the updated switch/event dispatch path.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Response includes a '## Post-Edit:' section header",
+          "description": "'Run post-edit analysis' with real pre/post .o artifacts must trigger the loci-post-edit skill"
+        },
+        {
+          "text": "Post-Edit block contains 'Happy path:' line",
+          "description": "Execution timing report must include the happy path metric"
+        },
+        {
+          "text": "Post-Edit block contains 'Worst path:' line",
+          "description": "Execution timing report must include the worst path metric"
+        },
+        {
+          "text": "Response includes a '### Control Flow' section",
+          "description": "CFG analysis must appear and describe the updated event-dispatch control flow"
+        }
+      ]
+    }
+  ]
+}

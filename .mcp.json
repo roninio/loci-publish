@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "loci": {
+      "type": "http",
+      "url": "https://mcp.auroralabs.com/mcp/v1"
+    }
+  }
+}

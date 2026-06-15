@@ -1,0 +1,6 @@
+{
+  "architecture": "cortexm",
+  "asm_function_count": 1895,
+  "symbol_count": 1916,
+  "timing_architecture": "armv7e-m"
+}

@@ -1,0 +1,4 @@
+# Pinned test dependencies (includes runtime deps).
+-r requirements.txt
+pytest==9.0.3
+pytest-timeout==2.4.0

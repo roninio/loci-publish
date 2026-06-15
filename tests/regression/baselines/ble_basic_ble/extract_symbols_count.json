@@ -1,0 +1,15 @@
+{
+  "sample_names": [
+    "llProcessPeripheralControlPacket",
+    "GAPBondMgr_ProcessGAPMsg",
+    "llProcessPeripheralControlProcedures",
+    "RCL_Handler_BLE5_adv",
+    "llAdv_TaskConnect",
+    "RCL_Handler_BLE5_conn",
+    "llSetupExtAdvLegacy",
+    "SCALARMUL_core",
+    "GAPBondMgr_SetParameter",
+    "doPrint"
+  ],
+  "total_count": 1916
+}

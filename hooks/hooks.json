@@ -1,0 +1,52 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-init.sh",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "export PYTHONIOENCODING=utf-8; VENV_PY=$(\"$CLAUDE_PLUGIN_ROOT/hooks/find-venv-python.sh\" 2>/dev/null); [ -n \"$VENV_PY\" ] && [ -x \"$VENV_PY\" ] && \"$VENV_PY\" \"$CLAUDE_PLUGIN_ROOT/hooks/preflight_check.py\" || true",
+            "timeout": 8,
+            "statusMessage": "LOCI — execution-aware analysis..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "export PYTHONIOENCODING=utf-8; VENV_PY=$(\"$CLAUDE_PLUGIN_ROOT/hooks/find-venv-python.sh\" 2>/dev/null); [ -n \"$VENV_PY\" ] && [ -x \"$VENV_PY\" ] && \"$VENV_PY\" \"$CLAUDE_PLUGIN_ROOT/hooks/post_edit_reminder.py\" || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "export PYTHONIOENCODING=utf-8; VENV_PY=$(\"$CLAUDE_PLUGIN_ROOT/hooks/find-venv-python.sh\" 2>/dev/null); [ -n \"$VENV_PY\" ] && [ -x \"$VENV_PY\" ] && \"$VENV_PY\" \"$CLAUDE_PLUGIN_ROOT/lib/loci_stats.py\" flush-impacts || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

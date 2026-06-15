@@ -1,0 +1,35 @@
+{
+  "skill_name": "loci-post-edit",
+  "evals": [
+    {
+      "id": "pe-1",
+      "prompt": "I compiled my filter module before and after the change. Pre-edit object is at build/filter.o.prev and post-edit is build/filter.o. The session says Target: arm64, Compiler: g++, LOCI target: aarch64. Run post-edit analysis.",
+      "expected_output": "Runs diff-elfs on filter.o.prev vs filter.o to find modified/added functions, extracts assembly from both for modified functions (post-only for added), extracts CFG from post, calls the LOCI API for timing on pre and post, then emits a report with Before/After/Diff columns showing happy path, worst path, and energy in the specified format. % diff is computed for each metric.",
+      "files": []
+    },
+    {
+      "id": "pe-2",
+      "prompt": "I just rebuilt my parser. I only have the new object file at build/parser.o — no previous version. Session context: Target: arm64, Compiler: g++, LOCI target: aarch64. Can you analyze it?",
+      "expected_output": "Since no pre-edit artifact is available, treats all functions as added. Extracts assembly and CFG from build/parser.o, calls the LOCI API for absolute timing, and emits a report with absolute happy path, worst path, and energy values only (no % diff). Notes '(no pre-edit artifact — showing absolute values only)'.",
+      "files": []
+    },
+    {
+      "id": "pe-3",
+      "prompt": "Run post-edit on my changes. Session context: Target: x86_64, Compiler: gcc, LOCI target: x86_64.",
+      "expected_output": "Detects that x86_64 is not a supported LOCI architecture. Emits the unsupported architecture message listing the four supported targets (aarch64/Cortex-A53, armv7e-m/Cortex-M4, armv6-m/Cortex-M0+, tc399/TriCore TC399) and stops without running any analysis.",
+      "files": []
+    },
+    {
+      "id": "pe-4",
+      "prompt": "I have pre and post object files for my motor controller at build/motor.o.prev and build/motor.o. Session says Target: armv7e-m, Compiler: arm-none-eabi-g++, LOCI target: armv7e-m. One function was modified (pid_step) and one new function was added (ramp_limit). Analyze the edit.",
+      "expected_output": "Runs diff-elfs to confirm pid_step is modified and ramp_limit is added. For pid_step: extracts assembly from both pre and post, calls the LOCI API on both, reports Before/After/Diff for happy path, worst path, and energy. For ramp_limit: extracts assembly and CFG from post only, calls the LOCI API, reports absolute timing with (NEW) marker. Both functions get CFG analysis from the post artifact.",
+      "files": []
+    },
+    {
+      "id": "pe-5",
+      "prompt": "Analyze my post-edit changes. Pre: build/codec.o.prev, Post: build/codec.o. Session: Target: arm64, Compiler: g++, LOCI target: aarch64. Note: the LOCI API is not reachable right now.",
+      "expected_output": "Runs diff-elfs and extract-cfg successfully. When the MCP call fails or is unavailable, falls back to CFG-only analysis and notes '(timing unavailable — MCP not connected)' in the report. Still provides control-flow analysis for all modified/added functions.",
+      "files": []
+    }
+  ]
+}

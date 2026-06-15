@@ -1,0 +1,56 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "loci",
+  "owner": {
+    "name": "AuroraLabs Ltd",
+    "email": "loci@auroralabs.com"
+  },
+  "forceRemoveDeletedPlugins": true,
+  "metadata": {
+    "description": "Execution-aware analysis for C/C++/Rust — hardware-grounded timing, energy, stack depth, memory, and security from compiled binaries. Real silicon traces, not simulated."
+  },
+  "plugins": [
+    {
+      "name": "loci",
+      "source": "./",
+      "strict": true,
+      "category": "development",
+      "tags": [
+        "C",
+        "C++",
+        "Rust",
+        "ARM",
+        "Cortex-M",
+        "Cortex-A",
+        "aarch64",
+        "TriCore",
+        "automotive",
+        "IoT",
+        "medical",
+        "defense",
+        "industrial",
+        "embedded",
+        "firmware",
+        "timing",
+        "energy",
+        "performance",
+        "stack-depth",
+        "memory",
+        "ROM",
+        "RAM",
+        "binary-analysis",
+        "ELF",
+        "assembly",
+        "control-flow",
+        "CFG",
+        "safety",
+        "MISRA",
+        "security",
+        "vulnerability-detection",
+        "execution-aware",
+        "hardware-grounded",
+        "HW-modeling"
+      ]
+    }
+  ]
+}

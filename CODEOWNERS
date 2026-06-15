@@ -1,0 +1,19 @@
+# Default owner for everything
+* @Roninio @stojang @vladimir-aurora @nikoladamov-auroralabs @ronena-aurora
+
+# lib - core library
+/lib/ @Roninio @vladimir-aurora @nikoladamov-auroralabs
+
+# tests
+/tests/ @Roninio @vladimir-aurora @nikoladamov-auroralabs
+
+# hooks
+/hooks/ @Roninio @vladimir-aurora @nikoladamov-auroralabs
+
+# skills
+/skills/ @Roninio @stojang @ronena-aurora @nikoladamov-auroralabs
+
+# setup
+/setup/ @Roninio @vladimir-aurora @nikoladamov-auroralabs
+
+

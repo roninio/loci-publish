@@ -1,0 +1,28 @@
+[project]
+name = "loci"
+version = "0.1.80"
+description = "Hardware-grounded execution-aware analysis for C/C++/Rust compiled binaries — timing, energy, stack depth, memory, security."
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: Other/Proprietary License",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest==9.0.3",
+    "pytest-timeout==2.4.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "unit: pure logic tests, no external deps",
+    "integration: requires real ELF files and asmslicer",
+    "regression: baseline comparison tests",
+    "mcp: requires MCP server network access",
+    "slow: tests that take >10 seconds",
+    "ble: requires BLE project",
+]
+timeout = 120
+addopts = "-v --tb=short"
