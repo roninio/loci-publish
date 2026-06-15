@@ -43,5 +43,19 @@
     "execution-aware",
     "hardware-grounded",
     "HW-modeling"
+  ],
+  "agents": [
+    "./agents"
+  ],
+  "skills": [
+    "./skills/bug-report",
+    "./skills/control-flow",
+    "./skills/exec-trace",
+    "./skills/help",
+    "./skills/loci-post-edit",
+    "./skills/loci-preflight",
+    "./skills/memory-report",
+    "./skills/stack-depth",
+    "./skills/trends"
   ]
 }
