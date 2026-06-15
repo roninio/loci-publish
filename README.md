@@ -1,5 +1,7 @@
 # LOCI
 
+Agent Skills for execution-aware firmware analysis.
+
 AI Writes Code. LOCI Gates It.
 
 LOCI's quality gate agent models regressions, power, latency, and bugs from the binary. From plan to merge. 
@@ -53,6 +55,23 @@ LOCI also runs automatically:
 ## Skills
 
 Gate — Human Decides. Define what matters. LOCI enforces it.
+
+LOCI is packaged in the Agent Skills format: each capability lives in
+`skills/<name>/SKILL.md` with discovery metadata (`name` and `description`) and
+task-specific instructions. Agents can discover the available skills at startup
+and load the full instructions only when the user's task matches a skill.
+
+```
+skills/
+├── exec-trace/
+│   └── SKILL.md
+├── stack-depth/
+│   └── SKILL.md
+└── ...
+```
+
+Shared plugin code stays in `lib/`; per-skill fixtures and evaluations live
+inside that skill folder when needed.
 
 | Skill | Trigger | What it does |
 |-------|---------|--------------|
