@@ -73,6 +73,10 @@ skills/
 Shared plugin code stays in `lib/`; per-skill fixtures and evaluations live
 inside that skill folder when needed.
 
+Workspace custom agents mirror the same skills under `agents/`. Each
+`<skill>.agent.md` file is a thin VS Code agent wrapper that loads and follows
+the matching `skills/<skill>/SKILL.md` workflow.
+
 | Skill | Trigger | What it does |
 |-------|---------|--------------|
 | **loci-preflight** | Auto in `/plan` mode | Audits the plan at binary level before code is written — timing, energy, and CFG impact. |
