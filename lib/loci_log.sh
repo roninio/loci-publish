@@ -36,7 +36,7 @@ _LOCI_LOG_FILE=""
 _LOCI_LOG_THRESHOLD=99
 if [ -n "${LOCI_LOG_LEVEL:-}" ]; then
     _LOCI_LOG_THRESHOLD=$(_loci_log_level_num "$LOCI_LOG_LEVEL")
-    _loci_dir="${LOCI_STATE_DIR:-${HOME}/.loci/state}"
+    _loci_dir="${LOCI_STATE_DIR:-$(pwd)/.loci/state}"
     if mkdir -p "$_loci_dir" 2>/dev/null; then
         _LOCI_LOG_FILE="$_loci_dir/loci.log"
         # One-shot rotation at source time. Truncate to last 1MB if file

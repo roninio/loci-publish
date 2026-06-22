@@ -50,13 +50,14 @@ cache so they survive plugin upgrades:
 |------|---------|----------|
 | `$LOCI_VENV_DIR` (typically `~/.loci/venv`) | Python 3.12 venv with asmslicer | `<plugin-dir>/.venv` |
 | `$LOCI_VENV_DIR/.setup-complete` | Setup marker (sha256 fingerprint of requirements.txt) | `<plugin-dir>/.venv/.setup-complete` |
-| `$LOCI_STATE_DIR` (typically `~/.loci/state`) | project-context, measurements, stats, loci-paths | `<plugin-dir>/state` |
+| `$LOCI_STATE_DIR` (typically `<cwd>/.loci/state`) | project-context, measurements, stats, loci-paths | `~/.loci/state`, then `<plugin-dir>/state` |
 | `~/.loci/impact-token.json` | per-user telemetry token | — |
 
-The plugin exports `LOCI_VENV_DIR` and `LOCI_STATE_DIR` at session start; read
-them with `${LOCI_VENV_DIR:-$HOME/.loci/venv}` and
-`${LOCI_STATE_DIR:-$HOME/.loci/state}` so the fallback path is used when this
-skill runs outside a hook context.
+The plugin exports `LOCI_VENV_DIR` and `LOCI_STATE_DIR` at session start, but
+that env does NOT propagate to skill Bash calls — so resolve the venv with
+`${LOCI_VENV_DIR:-$HOME/.loci/venv}` (shared, user-scoped) and the state dir
+with `${LOCI_STATE_DIR:-$(pwd)/.loci/state}` (project-local), which matches the
+language-level defaults every consumer uses.
 
 ## Step 0: Capture user description
 
@@ -81,7 +82,7 @@ Run these in parallel where possible via Bash and Read:
 6. **Project context** — Read `<project-context>` (the per-session keyed file
    listed as `project context:` in this session). Record the full JSON. If
    missing, record "MISSING".
-7. **LOCI paths** — Read `${LOCI_STATE_DIR:-$HOME/.loci/state}/loci-paths.json`.
+7. **LOCI paths** — Read `${LOCI_STATE_DIR:-$(pwd)/.loci/state}/loci-paths.json`.
    Fall back to `<plugin-dir>/state/loci-paths.json` for very old installs.
    If missing, record "MISSING".
 8. **Setup marker** — `cat "${LOCI_VENV_DIR:-$HOME/.loci/venv}/.setup-complete" 2>/dev/null \
@@ -157,7 +158,7 @@ investigate:
    - `loci-post-edit`: Was the edited file a C/C++/Rust source
      (.c, .cc, .cpp, .cxx, .h, .hpp, .hxx, .rs)? Was an Edit/Write/MultiEdit
      tool used?
-   - `loci-preflight`: Was Claude in `/plan` mode when the user described
+   - `loci-plan`: Was Claude in `/plan` mode when the user described
      new logic?
 
 3. **Skill visibility** — is the skill listed in the `Available:` line of the
@@ -165,7 +166,7 @@ investigate:
    `/help, /exec-trace, /stack-depth, /memory-report, /control-flow, /bug-report`.
    If not, session-init may not have registered it.
 
-4. **Deferred tools** — check if `loci:loci-post-edit`, `loci:loci-preflight`,
+4. **Deferred tools** — check if `loci:loci-post-edit`, `loci:loci-plan`,
    `loci:trends`, etc. appear in the system-reminder available skills list.
    If absent, the plugin may not be loaded.
 

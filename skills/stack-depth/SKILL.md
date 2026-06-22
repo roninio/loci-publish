@@ -233,7 +233,7 @@ Verdict: **PASS** 15.2%
 
 ### Escalation fold-back
 
-When stack-depth is invoked as an ESCALATION from loci-preflight or
+When stack-depth is invoked as an ESCALATION from loci-plan or
 loci-post-edit, still emit the full Conclusion table above, AND hand back
 to the parent skill a one-line summary in the form:
 `stack: <worst_case_depth> B (<usage_pct>%) — <PASS|CAUTION|FAIL>`.
@@ -305,7 +305,7 @@ Worked examples:
 
 ### Fold-back to parent (escalation mode)
 
-When stack-depth was invoked as an escalation from `preflight` /
+When stack-depth was invoked as an escalation from `plan` /
 `post-edit`, emit the full footer as described above AND hand the
 parent a one-line summary for fold-back:
 
@@ -315,7 +315,7 @@ stack: <worst_case_depth> B (<usage_pct>%) — <PASS|CAUTION|FAIL>
 
 The parent skill renders its own compact or expanded footer based on
 whether this fold-back was clean (see the clean-escalation suffix rule
-in the `loci-preflight` / `loci-post-edit` SKILL.md files).
+in the `loci-plan` / `loci-post-edit` SKILL.md files).
 
 ### Expand when...
 

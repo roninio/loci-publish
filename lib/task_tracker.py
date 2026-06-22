@@ -231,8 +231,8 @@ def main():
     parser = argparse.ArgumentParser(description="LOCI Task Tracker")
     parser.add_argument(
         "--state-dir",
-        default=os.environ.get("LOCI_STATE_DIR") or str(Path.home() / ".loci" / "state"),
-        help="State directory (defaults to $LOCI_STATE_DIR or ~/.loci/state)",
+        default=os.environ.get("LOCI_STATE_DIR") or str(Path.cwd() / ".loci" / "state"),
+        help="State directory (defaults to $LOCI_STATE_DIR or <cwd>/.loci/state)",
     )
     parser.add_argument("--session", default=None, help="Filter by session ID")
     parser.add_argument("--status", action="store_true", help="Show current status")

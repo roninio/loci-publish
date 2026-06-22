@@ -415,8 +415,8 @@ def main():
     parser = argparse.ArgumentParser(description="LOCI API Bridge - C++ Context Aggregator")
     parser.add_argument(
         "--state-dir",
-        default=os.environ.get("LOCI_STATE_DIR") or str(Path.home() / ".loci" / "state"),
-        help="Directory for persistent state (defaults to $LOCI_STATE_DIR or ~/.loci/state)",
+        default=os.environ.get("LOCI_STATE_DIR") or str(Path.cwd() / ".loci" / "state"),
+        help="Directory for persistent state (defaults to $LOCI_STATE_DIR or <cwd>/.loci/state)",
     )
     parser.add_argument("--session", required=True)
     parser.add_argument("--config", default=None)

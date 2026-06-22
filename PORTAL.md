@@ -50,8 +50,8 @@ Each session entry shows:
 |-------|-------------|
 | **Developer** | Who triggered the analysis |
 | **Timestamp** | When the session ran |
-| **Skill** | Preflight Auditing, Postflight Validation, exec-trace, stack-depth, memory-report |
-| **Verdict** | GOOD / ADJUST PLAN / STOP (preflight) or OK / CAUTION / FLAG (post-edit) |
+| **Skill** | Plan Auditing, Postflight Validation, exec-trace, stack-depth, memory-report |
+| **Verdict** | GOOD / ADJUST PLAN / STOP (plan) or OK / CAUTION / FLAG (post-edit) |
 | **Functions analysed** | Number of functions covered in the session |
 | **Binary delta** | Timing and energy change vs. previous build (where applicable) |
 
@@ -157,7 +157,7 @@ Quota resets daily.
 
 If you hit your limit, on-demand skills (`/exec-trace`, `/stack-depth`, `/memory-report`, `/control-flow`) will be unavailable until reset. 
 
-Auto-running skills (`loci-preflight`, `loci-post-edit`) pause automatically and resume the following day.
+Auto-running skills (`loci-plan`, `loci-post-edit`) pause automatically and resume the following day.
 
 ---
 

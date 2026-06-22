@@ -137,10 +137,10 @@ If the architecture is **not** in this table, emit and stop:
 Supported: aarch64 , armv7e-m , armv6-m , tc399
 ```
 
-## Step 1: Compile post-edit using preflight's flags
+## Step 1: Compile post-edit using loci-plan's flags
 
-Compile the edited source with the exact compiler + flags preflight used. The
-pre-edit hook captured preflight's metadata at
+Compile the edited source with the exact compiler + flags loci-plan used. The
+pre-edit hook captured loci-plan's metadata at
 `.loci-build/<loci_target>/<basename>.o.meta.json.prev`. Pass it via
 `--meta-prev` so the post-edit build inherits those flags rather than
 re-detecting them:
@@ -160,10 +160,10 @@ sidecar is the source of truth, and Step 1b's `build-metadata diff`
 already surfaces a `LOCI · build mismatch` block on its own when parity
 fails, which is the only case the user needs to see.
 
-If `.o.meta.json.prev` does not exist, preflight did not run before this
+If `.o.meta.json.prev` does not exist, loci-plan did not run before this
 edit. Omit `--meta-prev`; `build-metadata` will re-detect flags and record
 them. Report absolute timing only in Step 5 — no % diff is available without
-a preflight baseline.
+a loci-plan baseline.
 
 **Validate the .o** — a standalone `-c` compile can exit 0 yet produce an
 empty object file when the source is wrapped in `#if` / `#ifdef` guards
@@ -176,7 +176,7 @@ the target function was compiled out. Ask the user for the `-D` flags the
 project build system uses, re-run `<build-metadata-cmd> compile`, and
 re-validate. Do not fall back to a project-built `.elf` with unknown flags.
 
-## Step 1b: Verify build parity between preflight and post-edit
+## Step 1b: Verify build parity between loci-plan and post-edit
 
 ```
 <build-metadata-cmd> diff \
@@ -194,25 +194,25 @@ Exit code:
   apples-to-apples; proceed normally.
 - **non-zero** — the command prints a `LOCI · build mismatch` block.
   **Emit it verbatim** in the post-edit report, tag the final verdict as
-  `LOW CONFIDENCE — build environment changed between preflight and
+  `LOW CONFIDENCE — build environment changed between loci-plan and
   post-edit`, and **continue with full timing analysis**. The % diffs may
   reflect the toolchain delta rather than the code change — note that,
   but still report the numbers. Do not stop, skip steps, or omit the
   per-function table on a build mismatch.
 
-  A `flag_source` kind regression (e.g. preflight used `gmake-dry-run`
+  A `flag_source` kind regression (e.g. loci-plan used `gmake-dry-run`
   but post-edit fell through to `defaults`) shows up as a dedicated line
   in the mismatch block: `flag_source   kind 'X' → 'Y' — discovery
-  regressed between preflight and post-edit; baseline unreliable`.
+  regressed between loci-plan and post-edit; baseline unreliable`.
   Treat that as a stronger signal than a flag-list-only delta, but the
   same rule applies: surface it, do not stop.
 
-Skip this step entirely only if preflight did not run (no
+Skip this step entirely only if loci-plan did not run (no
 `.o.meta.json.prev`).
 
 ## Step 2: diff-elfs — find modified/added functions
 
-### Case A: `.o.prev` exists (preflight ran before the edit)
+### Case A: `.o.prev` exists (loci-plan ran before the edit)
 
 The pair of artifacts to compare lives in `.loci-build/<loci_target>/`:
 - pre-edit:  `<basename>.o.prev`   (captured by the pre-edit hook)
@@ -228,13 +228,13 @@ The pair of artifacts to compare lives in `.loci-build/<loci_target>/`:
 This returns lists of `modified` and `added` functions. Only these functions
 need analysis — skip unchanged code entirely.
 
-### Case B: no `.o.prev` (preflight did not run)
+### Case B: no `.o.prev` (loci-plan did not run)
 
 Do **NOT** invoke `diff-elfs` — it requires both artifacts and will error
 on a missing `--elf-path`. Skip directly to Step 3 and extract assembly from
 the post-edit `.o` only; treat every function in the output as "added" for
 reporting purposes. Note in the final report:
-`(no preflight baseline — first-edit measurement; % diff not available)`.
+`(no loci-plan baseline — first-edit measurement; % diff not available)`.
 
 ## Step 3 + 4a: extract assembly and fetch timing in one call
 
@@ -631,7 +631,7 @@ Replace the compact form with the expanded multi-line form if **any**
 of the following is true:
 - Verdict is `⚠️ CAUTION` or `❌ FLAG`.
 - Build-parity mismatch — a `LOCI · build mismatch` block was emitted
-  earlier in the report (toolchain changed between preflight and
+  earlier in the report (toolchain changed between loci-plan and
   post-edit; % diffs are low-confidence).
 - `N > 1` functions were modified/added in this run — the compact line
   cannot carry per-function trends honestly; render the expanded form

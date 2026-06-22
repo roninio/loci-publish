@@ -12,7 +12,7 @@ Each example shows a complete LOCI interaction — the trigger phrase, what LOCI
 
 > "Add a retry mechanism to `uart_send`."
 
-LOCI preflight audits the plan before Claude writes a single line. It checks timing impact, energy budget, and stack depth against your quality contracts and returns a verdict:
+LOCI's plan analysis audits the plan before Claude writes a single line. It checks timing impact, energy budget, and stack depth against your quality contracts and returns a verdict:
 
 - **GOOD** — plan is safe to proceed
 - **ADJUST PLAN** — specific concern flagged with a recommendation

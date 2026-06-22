@@ -43,28 +43,37 @@ def test_state_dir_honours_env_var(tmp_path, monkeypatch, reload_loci_stats):
     assert mod.STATE_DIR == tmp_path / "custom-state"
 
 
-def test_state_dir_defaults_to_home_dot_loci(tmp_path, monkeypatch, reload_loci_stats):
+def test_state_dir_defaults_to_project_local(tmp_path, monkeypatch, reload_loci_stats):
+    """With no env override, state lives in <cwd>/.loci/state so all LOCI
+    artifacts stay with the project being analyzed."""
     monkeypatch.delenv("LOCI_STATE_DIR", raising=False)
-    # Patch Path.home directly — monkeypatching $HOME alone is not enough
-    # on Windows, where ntpath.expanduser consults %USERPROFILE% first.
-    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path))
+    monkeypatch.chdir(tmp_path)
     mod = reload_loci_stats()
     assert mod.STATE_DIR == tmp_path / ".loci" / "state"
     # Directory should actually get created
     assert (tmp_path / ".loci" / "state").is_dir()
+    # ...and shielded from the user's repo with a .gitignore guard.
+    assert (tmp_path / ".loci" / "state" / ".gitignore").read_text() == "*\n"
 
 
-def test_state_dir_falls_back_to_plugin_when_home_unwritable(
+def test_state_dir_falls_back_when_project_and_home_unwritable(
     tmp_path, monkeypatch, reload_loci_stats
 ):
-    """If ~/.loci/state can't be mkdir'd (e.g. read-only HOME), resolution
-    must fall through to <plugin>/state so the plugin still works."""
+    """If neither <cwd>/.loci/state nor ~/.loci/state can be mkdir'd (e.g. a
+    read-only checkout and read-only HOME), resolution must fall through to
+    <plugin>/state so the plugin still works."""
     monkeypatch.delenv("LOCI_STATE_DIR", raising=False)
+    # cwd: pre-create a FILE named ".loci" so mkdir(".loci/state") raises
+    proj = tmp_path / "proj"
+    proj.mkdir()
+    (proj / ".loci").write_text("not a dir")
+    monkeypatch.chdir(proj)
+    # home: same trick so the second fallback also fails
     fake_home = tmp_path / "readonly-home"
     fake_home.mkdir()
-    # Pre-create a FILE named ".loci" so mkdir(".loci/state") raises
     (fake_home / ".loci").write_text("not a dir")
-    # Patch Path.home directly — see note in the previous test.
+    # Patch Path.home directly — monkeypatching $HOME alone is not enough
+    # on Windows, where ntpath.expanduser consults %USERPROFILE% first.
     monkeypatch.setattr(Path, "home", classmethod(lambda cls: fake_home))
 
     mod = reload_loci_stats()

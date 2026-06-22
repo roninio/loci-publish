@@ -1,6 +1,7 @@
 # Runtime state and logs
 loci/state/
 state/
+.loci/state/
 .loci-build/
 .setup-complete
 .setup-lock/

@@ -176,7 +176,7 @@ find_elf_files() {
 # Find candidate build directories by locating dirs that contain either a
 # linked ELF or a makefile that references $(CC). The Python cascade will
 # score and pick one, but publishing the list here avoids re-walking the
-# tree on every preflight invocation.
+# tree on every plan invocation.
 find_build_dirs() {
   local prune='-type d ( -name .git -o -name node_modules -o -name .venv -o -name target -o -name vendor -o -name third_party -o -name cmake-build-debug -o -name cmake-build-release -o -name __pycache__ -o -name .pytest_cache )'
   local dirs=()

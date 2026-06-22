@@ -425,7 +425,7 @@ Verdict: **PASS** 1.8%
 
 ### Escalation fold-back
 
-When memory-report is invoked as an ESCALATION from loci-preflight or
+When memory-report is invoked as an ESCALATION from loci-plan or
 loci-post-edit, still emit the full Conclusion table above, AND hand back
 to the parent skill a one-line summary in the form:
 `memory: ROM <X>% / RAM <Y>% — <PASS|CAUTION|FAIL>`. The parent skill
@@ -522,7 +522,7 @@ Heap segment too.
 
 ### Fold-back to parent (escalation mode)
 
-When memory-report was invoked as an escalation from `preflight` /
+When memory-report was invoked as an escalation from `plan` /
 `post-edit`, emit the full footer as described above AND hand the
 parent a one-line summary for fold-back:
 

@@ -208,10 +208,11 @@ if sys.stderr.encoding and sys.stderr.encoding.lower().replace("-", "") != "utf8
 # This ensures the GNU c++filt (which supports -r) is found before any
 # system-installed version that may not (e.g. Apple's /usr/bin/c++filt).
 #
-# State lives under LOCI_STATE_DIR (set by session-init.sh, typically
-# ~/.loci/state) so the detection result survives plugin upgrades.
+# State lives under LOCI_STATE_DIR (set by session-init.sh) or, by default,
+# in the project-local <cwd>/.loci/state so all LOCI artifacts stay with the
+# project being analyzed. asm-analyze always runs with cwd = the project root.
 _STATE_DIR_FOR_PATHS = Path(
-    os.environ.get("LOCI_STATE_DIR", Path.home() / ".loci" / "state")
+    os.environ.get("LOCI_STATE_DIR", Path.cwd() / ".loci" / "state")
 )
 _PATHS_FILE = _STATE_DIR_FOR_PATHS / "loci-paths.json"
 if not _PATHS_FILE.exists():

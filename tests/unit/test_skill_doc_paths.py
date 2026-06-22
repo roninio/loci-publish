@@ -6,11 +6,11 @@ Windows-native Python (including the venv) cannot resolve"). On macOS
 and Linux the LLM reasonably concluded `/tmp` was acceptable and
 emitted commands like:
 
-    asm_analyze.py extract-assembly ... > /tmp/loci_preflight.json &&
-    python -c "import json; json.load(open('/tmp/loci_preflight.json'))..."
+    asm_analyze.py extract-assembly ... > /tmp/loci_plan.json &&
+    python -c "import json; json.load(open('/tmp/loci_plan.json'))..."
 
 which trips Claude Code's out-of-project permission prompt and halts
-preflight/post-edit/eval automation regardless of OS.
+plan/post-edit/eval automation regardless of OS.
 
 This lint pins the OS-agnostic shape: every doc surface that mentions
 `/tmp` (or `/var/tmp`) must carry an unconditional prohibition —

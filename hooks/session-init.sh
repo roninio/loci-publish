@@ -13,14 +13,28 @@
 
 PLUGIN_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
-# Persistent state lives outside the versioned plugin dir so it survives
-# plugin upgrades (measurements, stats, cursor, logs, project-context).
-# Fall back to the legacy plugin-dir location only if ~/.loci/state can't
-# be created — e.g. read-only HOME. Python side reads LOCI_STATE_DIR to
-# match this choice within the session.
-STATE_DIR="${HOME}/.loci/state"
-if ! mkdir -p "$STATE_DIR" 2>/dev/null; then
-    STATE_DIR="${PLUGIN_DIR}/state"
+# Persistent state lives in the project working directory so that all LOCI
+# artifacts (measurements, stats, cursor, logs, project-context, loci-paths)
+# stay with the project being analyzed. This also survives plugin upgrades —
+# the project dir is never wiped on a version bump.
+#
+# NOTE: this exported LOCI_STATE_DIR does NOT propagate to later hooks or to
+# skill-invoked Bash calls (Claude Code does not persist hook env). Those
+# consumers resolve the SAME path from their own default of <cwd>/.loci/state
+# (cwd is always the project root). Keep the two in sync — see
+# lib/loci_stats.py _resolve_state_dir() and the other lib defaults.
+#
+# Fall back to ~/.loci/state, then the plugin dir, only if the project dir
+# isn't writable (e.g. a read-only checkout).
+STATE_DIR="$(pwd)/.loci/state"
+if mkdir -p "$STATE_DIR" 2>/dev/null; then
+    # Shield the user's repo: never surface LOCI's runtime writes in git.
+    [ -f "$STATE_DIR/.gitignore" ] || printf '*\n' > "$STATE_DIR/.gitignore" 2>/dev/null
+else
+    STATE_DIR="${HOME}/.loci/state"
+    if ! mkdir -p "$STATE_DIR" 2>/dev/null; then
+        STATE_DIR="${PLUGIN_DIR}/state"
+    fi
 fi
 export LOCI_STATE_DIR="$STATE_DIR"
 
@@ -698,11 +712,11 @@ Neutral (when results are baseline or first measurement):
 Rules: Always cite numbers. Never use emoji. Never be vague ("looks good" without data). Attribute improvements to the user. Skip the remark when results are complex or the user needs raw data only. This is a presentation tone, not a persona — do not roleplay.'
 
 if [ -n "$_ASM_ANALYZE_CMD" ]; then
-    CONTEXT=$(printf 'loci version: %s\nTarget: %s, Compiler: %s, Build: %s\nLOCI target: %s\nBranch: %s\nasm-analyze command: %s\nbuild-metadata command: %s\nvenv python: %s\nplugin dir: %s\nproject context: %s\nAvailable: /help, /exec-trace, /stack-depth, /memory-report, /control-flow, /bug-report\nAuto-runs: loci-preflight (in /plan), loci-post-edit (after edits)\nLOCI auto-run rules: When in /plan mode and the user describes new C/C++/Rust logic to implement, you MUST invoke the loci:loci-preflight skill on existing callees before proposing edits. After any Edit/Write/MultiEdit to C/C++/Rust source files (.c,.cc,.cpp,.cxx,.h,.hpp,.hxx,.rs), you MUST invoke the loci:loci-post-edit skill immediately. These are not optional — they are required whenever LOCI is active.\nLOCI python policy: The plugin requires Python 3.12 (venv above). For any Python invocation inside a Bash call, use the `venv python` path above — never bare `python` or `python3` (on Windows that resolves to the Microsoft Store stub; on macOS it may pick a wrong version). For parsing JSON from `asm-analyze` / `build-metadata`, use `jq` — never `python -c`. Reasons: (1) the plugin emits Unicode (e.g. `→`, `─`, en-dash) in CFG text and `python -c` on Windows defaults to cp1252 stdout and crashes with UnicodeEncodeError; (2) `jq` is faster, simpler, and ships with the plugin. Path policy: NEVER write intermediate files to `/tmp/`, `/var/tmp/`, or any path outside the working directory (on Windows, `/tmp/...` additionally cannot be resolved by the venv Python) — Claude Code prompts the user for permission on every out-of-project access, halting automated preflight/post-edit/eval runs. Always write inside the project (e.g. `.loci-build/`) so every tool sees the same path.\n%s' \
+    CONTEXT=$(printf 'loci version: %s\nTarget: %s, Compiler: %s, Build: %s\nLOCI target: %s\nBranch: %s\nasm-analyze command: %s\nbuild-metadata command: %s\nvenv python: %s\nplugin dir: %s\nproject context: %s\nAvailable: /help, /exec-trace, /stack-depth, /memory-report, /control-flow, /bug-report\nAuto-runs: loci-plan (in /plan), loci-post-edit (after edits)\nLOCI auto-run rules: When in /plan mode and the user describes new C/C++/Rust logic to implement, you MUST invoke the loci:loci-plan skill on existing callees before proposing edits. After any Edit/Write/MultiEdit to C/C++/Rust source files (.c,.cc,.cpp,.cxx,.h,.hpp,.hxx,.rs), you MUST invoke the loci:loci-post-edit skill immediately. These are not optional — they are required whenever LOCI is active.\nLOCI python policy: The plugin requires Python 3.12 (venv above). For any Python invocation inside a Bash call, use the `venv python` path above — never bare `python` or `python3` (on Windows that resolves to the Microsoft Store stub; on macOS it may pick a wrong version). For parsing JSON from `asm-analyze` / `build-metadata`, use `jq` — never `python -c`. Reasons: (1) the plugin emits Unicode (e.g. `→`, `─`, en-dash) in CFG text and `python -c` on Windows defaults to cp1252 stdout and crashes with UnicodeEncodeError; (2) `jq` is faster, simpler, and ships with the plugin. Path policy: NEVER write intermediate files to `/tmp/`, `/var/tmp/`, or any path outside the working directory (on Windows, `/tmp/...` additionally cannot be resolved by the venv Python) — Claude Code prompts the user for permission on every out-of-project access, halting automated plan/post-edit/eval runs. Always write inside the project (e.g. `.loci-build/`) so every tool sees the same path.\n%s' \
         "$_LOCI_VER" "$_CTX_TARGET" "$_CTX_COMPILER" "$_CTX_BUILD" "$_CTX_TARGET" "$_CTX_BRANCH" \
         "$_ASM_ANALYZE_CMD" "$_BUILD_METADATA_CMD" "$_VENV_PY" "$AUTH_PLUGIN_DIR" "$_CTX_PROJECT_CONTEXT" "$LOCI_VOICE")
 else
-    CONTEXT=$(printf 'loci version: %s\nTarget: %s, Compiler: %s, Build: %s\nLOCI target: %s\nBranch: %s\nasm-analyze: unavailable (first-time setup running — restart after ~60 s)\nbuild-metadata: unavailable (first-time setup running — restart after ~60 s)\nvenv python: unavailable\nplugin dir: %s\nproject context: %s\nAvailable: /help, /exec-trace, /stack-depth, /memory-report, /control-flow, /bug-report\nAuto-runs: loci-preflight (in /plan), loci-post-edit (after edits)\nLOCI auto-run rules: When in /plan mode and the user describes new C/C++/Rust logic to implement, you MUST invoke the loci:loci-preflight skill on existing callees before proposing edits. After any Edit/Write/MultiEdit to C/C++/Rust source files (.c,.cc,.cpp,.cxx,.h,.hpp,.hxx,.rs), you MUST invoke the loci:loci-post-edit skill immediately. These are not optional — they are required whenever LOCI is active.\n%s' \
+    CONTEXT=$(printf 'loci version: %s\nTarget: %s, Compiler: %s, Build: %s\nLOCI target: %s\nBranch: %s\nasm-analyze: unavailable (first-time setup running — restart after ~60 s)\nbuild-metadata: unavailable (first-time setup running — restart after ~60 s)\nvenv python: unavailable\nplugin dir: %s\nproject context: %s\nAvailable: /help, /exec-trace, /stack-depth, /memory-report, /control-flow, /bug-report\nAuto-runs: loci-plan (in /plan), loci-post-edit (after edits)\nLOCI auto-run rules: When in /plan mode and the user describes new C/C++/Rust logic to implement, you MUST invoke the loci:loci-plan skill on existing callees before proposing edits. After any Edit/Write/MultiEdit to C/C++/Rust source files (.c,.cc,.cpp,.cxx,.h,.hpp,.hxx,.rs), you MUST invoke the loci:loci-post-edit skill immediately. These are not optional — they are required whenever LOCI is active.\n%s' \
         "$_LOCI_VER" "$_CTX_TARGET" "$_CTX_COMPILER" "$_CTX_BUILD" "$_CTX_TARGET" "$_CTX_BRANCH" \
         "$AUTH_PLUGIN_DIR" "$_CTX_PROJECT_CONTEXT" "$LOCI_VOICE")
 fi

@@ -128,9 +128,9 @@ def main():
                 f"[loci] {basename} was modified. "
                 "You MUST invoke the loci:loci-post-edit skill NOW — "
                 "do not proceed to the next edit or respond to the user first. "
-                "EXCEPTION: if this edit was made as part of a loci-preflight pass "
+                "EXCEPTION: if this edit was made as part of a loci-plan pass "
                 "(predictive measurement of a candidate function), do NOT invoke "
-                "loci-post-edit — preflight will report the analysis itself."
+                "loci-post-edit — loci-plan will report the analysis itself."
             ),
         }
     }

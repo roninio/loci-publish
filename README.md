@@ -17,7 +17,7 @@ Without running code. No instrumentation. No code changes.
 | [uv](https://docs.astral.sh/uv/) | any | Python venv setup — auto-installed by `setup.sh` |
 | jq | any | session hooks — auto-installed by `setup.sh` |
 | Compiled binaries | `.elf` / `.o` / `.axf` | all skills |
-| Network access to `https://app.auroralabs.com` | — | `exec-trace`, `loci-preflight`, `loci-post-edit` |
+| Network access to `https://app.auroralabs.com` | — | `exec-trace`, `loci-plan`, `loci-post-edit` |
 
 **Cross-compiler** (one required, depending on your target):
 
@@ -49,7 +49,7 @@ AI Writes Code. LOCI Gates It.
 4. **Control-flow safety** — ask: *"What does the call graph for process_data() look like?"*
 
 LOCI also runs automatically:
-- **loci-preflight** fires during `/plan` - analyzes callees at the binary level before code is written.
+- **loci-plan** fires during `/plan` - analyzes callees at the binary level before code is written.
 - **loci-post-edit** fires after every edit - diffs the binary and returns a regression verdict.
 
 ## Skills
@@ -79,7 +79,7 @@ the matching `skills/<skill>/SKILL.md` workflow.
 
 | Skill | Trigger | What it does |
 |-------|---------|--------------|
-| **loci-preflight** | Auto in `/plan` mode | Audits the plan at binary level before code is written — timing, energy, and CFG impact. |
+| **loci-plan** | Auto in `/plan` mode | Audits the plan at binary level before code is written — timing, energy, and CFG impact. |
 | **loci-post-edit** | Auto after edits | Diffs pre/post compiled artifacts — regression verdict on  timing, energy, and control-flow. |
 | **exec-trace** | User-invoked | Function-level timing and energy from real-time hardware traces, powered by LCLM. |
 | **stack-depth** | User-invoked | Worst-case stack depth via call-graph traversal, per-function frame sizes |
@@ -112,13 +112,13 @@ LOCI's binary analysis — regressions, power, latency, and bugs — requires th
 3. If it still fails, check your network can reach `https://app.auroralabs.com`.
 
 Skills that work without MCP: `stack-depth`, `memory-report`, `control-flow`  
-Skills that require MCP: `exec-trace`, `loci-preflight`, `loci-post-edit`
+Skills that require MCP: `exec-trace`, `loci-plan`, `loci-post-edit`
 
 ### LOCI was not called / skills didn't trigger
 
 **Auto-skills didn't fire:**
 
-- `loci-preflight` only runs in `/plan` mode. Make sure you're planning new logic, not just asking a question.
+- `loci-plan` only runs in `/plan` mode. Make sure you're planning new logic, not just asking a question.
 - `loci-post-edit` Validation only runs after edits to C/C++/Rust source files.
 - Both auto-skills require compiled binaries (`.elf`, `.o`, `.axf`) to be present. If your project hasn't been built yet, compile it first.
 

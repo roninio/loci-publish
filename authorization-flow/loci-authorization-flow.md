@@ -137,7 +137,7 @@ With LOCI connected, you can run any of its skills from Claude Code:
 
 Two skills also run automatically without a slash command:
 
-- **loci-preflight** — triggered during `/plan` when you describe new logic.
+- **loci-plan** — triggered during `/plan` when you describe new logic.
 - **loci-post-edit** — triggered immediately after you edit a C/C++/Rust source file.
 
 See the [LOCI skills reference](../skills/) for details on each skill.

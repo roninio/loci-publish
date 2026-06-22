@@ -33,7 +33,7 @@ def _resolve_threshold() -> int | None:
 
 def _resolve_log_file() -> Path | None:
     raw = os.environ.get("LOCI_STATE_DIR")
-    d = Path(raw) if raw else Path.home() / ".loci" / "state"
+    d = Path(raw) if raw else Path.cwd() / ".loci" / "state"
     try:
         d.mkdir(parents=True, exist_ok=True)
         return d / "loci.log"

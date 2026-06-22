@@ -13,11 +13,14 @@ fi
 PLUGIN_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 # Persistent state — see hooks/session-init.sh for the same resolution.
 # Honour LOCI_STATE_DIR if the caller set it; otherwise default to the
-# user-scoped location, falling back to the plugin dir only if HOME
-# isn't writable.
-STATE_DIR="${LOCI_STATE_DIR:-$HOME/.loci/state}"
+# project-local location (state lives with the project being analyzed),
+# falling back to the home dir, then the plugin dir, if it isn't writable.
+STATE_DIR="${LOCI_STATE_DIR:-$(pwd)/.loci/state}"
 if [ ! -d "$STATE_DIR" ] && ! mkdir -p "$STATE_DIR" 2>/dev/null; then
-    STATE_DIR="${PLUGIN_DIR}/state"
+    STATE_DIR="${HOME}/.loci/state"
+    if [ ! -d "$STATE_DIR" ] && ! mkdir -p "$STATE_DIR" 2>/dev/null; then
+        STATE_DIR="${PLUGIN_DIR}/state"
+    fi
 fi
 LOG_FILE="${STATE_DIR}/loci-actions.log"
 WARNINGS_FILE="${STATE_DIR}/loci-warnings.json"

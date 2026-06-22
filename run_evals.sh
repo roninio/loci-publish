@@ -277,8 +277,8 @@ grade_bash() {
   local SHOULD_TRIGGER="$2"
 
   if [[ "$SHOULD_TRIGGER" == "true" ]]; then
-    if ! echo "$RESPONSE" | grep -qiE '##[[:space:]]*preflight|preflight[[:space:]]+analysis'; then
-      echo "FAIL|missing Preflight header"; return
+    if ! echo "$RESPONSE" | grep -qiE '##[[:space:]]*Loci[[:space:]]+Plan|plan[[:space:]]+analysis'; then
+      echo "FAIL|missing Loci Plan header"; return
     fi
     if ! echo "$RESPONSE" | grep -qiE 'call[[:space:].-]*graph'; then
       echo "FAIL|missing Call graph section"; return
@@ -298,15 +298,15 @@ grade_bash() {
     if ! echo "$RESPONSE" | grep -qiE 'GOOD|ADJUST PLAN|STOP'; then
       echo "FAIL|missing GOOD/ADJUST PLAN/STOP verdict"; return
     fi
-    echo "PASS|all required preflight sections present"
+    echo "PASS|all required plan sections present"
   else
-    if echo "$RESPONSE" | grep -qiE '##[[:space:]]*preflight|preflight[[:space:]]+analysis'; then
-      echo "FAIL|should not have triggered but contains Preflight header"; return
+    if echo "$RESPONSE" | grep -qiE '##[[:space:]]*Loci[[:space:]]+Plan|plan[[:space:]]+analysis'; then
+      echo "FAIL|should not have triggered but contains Loci Plan header"; return
     fi
     if echo "$RESPONSE" | grep -qiE 'call[[:space:].-]*graph'; then
       echo "FAIL|should not have triggered but contains Call graph"; return
     fi
-    echo "PASS|correctly did not trigger preflight"
+    echo "PASS|correctly did not trigger plan analysis"
   fi
 }
 

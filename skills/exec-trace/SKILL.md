@@ -157,9 +157,9 @@ If no `.o` exists yet, fall through to full compilation.
    - `src` = the source file most frequently cited in the CFG block annotations for that function (project-relative path; strip absolute prefixes like `/Users/.../<project_root>/` when present, otherwise basename)
    Skip any function whose blocks all returned errors from the API.
 
-7.5. **Look up the previous `worst_ns` and `ts` per function** from the LOCI state JSONL BEFORE the new measurement is appended. Honor `$LOCI_STATE_DIR` if set; otherwise fall back to `~/.loci/state`. Read `cwd_hash` and `branch_slug` from the project-context JSON. One per-function lookup is enough — the JSONL has one row per line:
+7.5. **Look up the previous `worst_ns` and `ts` per function** from the LOCI state JSONL BEFORE the new measurement is appended. Honor `$LOCI_STATE_DIR` if set; otherwise fall back to the project-local `<cwd>/.loci/state` (LOCI's default — state lives with the project). Read `cwd_hash` and `branch_slug` from the project-context JSON. One per-function lookup is enough — the JSONL has one row per line:
    ```
-   STATE_DIR="${LOCI_STATE_DIR:-$HOME/.loci/state}"
+   STATE_DIR="${LOCI_STATE_DIR:-$(pwd)/.loci/state}"
    PREV_LINE=$(grep -F '"fn":"<fn>"' "$STATE_DIR/loci-measurements-<cwd_hash>-<branch_slug>.jsonl" 2>/dev/null | tail -n1)
    if [ -n "$PREV_LINE" ]; then
      PREV_NS=$(printf '%s' "$PREV_LINE" | jq -r '.worst_ns // empty')

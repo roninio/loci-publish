@@ -37,24 +37,48 @@ def _resolve_state_dir() -> Path:
     Precedence:
       1. LOCI_STATE_DIR env var (set by session-init.sh after verifying it's
          writable) — authoritative for the current session.
-      2. ~/.loci/state — default unversioned user-scoped location.
-      3. <plugin>/state — fall back if home isn't writable; this means the
-         user loses state across plugin upgrades (old behaviour), but the
-         plugin still works.
+      2. <cwd>/.loci/state — project-local default. All LOCI artifacts live
+         with the project being analyzed, not in the user's home dir. Every
+         consumer (hooks, skill Bash calls, asm-analyze) runs with cwd = the
+         project root, so this resolves consistently across the session even
+         though the SessionStart env export does not propagate to them.
+      3. ~/.loci/state — fall back if the project dir isn't writable.
+      4. <plugin>/state — last resort if home isn't writable either.
 
-    State that predates this change may still live under <plugin>/state of
-    an older install. We don't migrate automatically — state regenerates
-    naturally from the next session onward in the new location.
+    State that predates this change may still live under ~/.loci/state or
+    <plugin>/state of an older install. We don't migrate automatically —
+    state regenerates naturally from the next session onward in the new
+    location.
     """
     env = os.environ.get("LOCI_STATE_DIR")
     if env:
         return Path(env)
+    project_state = Path.cwd() / ".loci" / "state"
+    try:
+        project_state.mkdir(parents=True, exist_ok=True)
+        _ensure_state_gitignore(project_state)
+        return project_state
+    except OSError:
+        pass
     home_state = HOME_LOCI_DIR / "state"
     try:
         home_state.mkdir(parents=True, exist_ok=True)
         return home_state
     except OSError:
         return PLUGIN_DIR / "state"
+
+
+def _ensure_state_gitignore(state_dir: Path) -> None:
+    """Drop a `.gitignore` (containing `*`) in the project-local state dir so
+    LOCI's runtime writes never show up in the user's `git status` or get
+    committed. Idempotent and best-effort — failure is non-fatal."""
+    gi = state_dir / ".gitignore"
+    if gi.exists():
+        return
+    try:
+        gi.write_text("*\n", encoding="utf-8")
+    except OSError:
+        pass
 
 
 STATE_DIR = _resolve_state_dir()
@@ -290,7 +314,7 @@ def _measurements_path(context_file: str | None = None) -> Path | None:
 def _skill_runs_path(context_file: str | None = None) -> Path | None:
     """Resolve JSONL skill-runs file for current project+branch.
 
-    One row per /loci-preflight or /loci-post-edit invocation, capturing
+    One row per /loci-plan or /loci-post-edit invocation, capturing
     the verdict line verbatim (e.g. "Verdict: OK — debug log added
     intentionally; +203 ns overhead is expected ..."). Read by the trends
     ride-along during the Stop-hook flush.
@@ -1147,7 +1171,7 @@ def main():
     rec.add_argument("--functions", type=int, default=0)
     rec.add_argument("--mcp-calls", "--api-calls", dest="mcp_calls", type=int, default=0)
     rec.add_argument("--co-reasoning", type=int, default=0)
-    # Verdict ride-along: when present (preflight/post-edit only), append
+    # Verdict ride-along: when present (plan/post-edit only), append
     # to the per-project skill-runs JSONL alongside the stats write.
     rec.add_argument("--verdict", default=None,
                      help="Verbatim verdict line from the skill report")

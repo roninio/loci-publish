@@ -104,7 +104,7 @@ LOCI's timing and energy analysis requires a LOCI API key.
 The key is read at call time by the HTTP API helper — no restart needed.
 
 Skills that work without an API key: /stack-depth, /memory-report, /control-flow
-Skills that need an API key:         /exec-trace, loci-preflight, loci-post-edit
+Skills that need an API key:         /exec-trace, loci-plan, loci-post-edit
 ```
 
 ## Step 2: Show Available Skills
@@ -129,7 +129,7 @@ should know what's possible even if their setup isn't complete yet.
 
 ## Auto-running (no command needed)
 
-  loci-preflight   Runs in /plan — checks call graph, timing, energy, execution fit
+  loci-plan        Runs in /plan — checks call graph, timing, energy, execution fit
                    Escalates to /stack-depth or /memory-report when needed
                    Verdict: GOOD / ADJUST PLAN / STOP
 

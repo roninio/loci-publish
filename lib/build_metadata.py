@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LOCI build metadata — always-known compiler/flags for preflight + post-edit.
+"""LOCI build metadata — always-known compiler/flags for loci-plan + post-edit.
 
 When the project has an existing .o/.elf, the plugin has no way to know which
 compiler version or flags produced it. Reusing it as .o.prev and comparing
@@ -989,7 +989,7 @@ def diff_metas(prev: dict, curr: dict) -> list[str]:
     ):
         out.append(
             f"  {'flag_source':14} kind {prev_kind!r} → {curr_kind!r} — "
-            "discovery regressed between preflight and post-edit; baseline unreliable"
+            "discovery regressed between loci-plan and post-edit; baseline unreliable"
         )
     return out
 
@@ -1378,7 +1378,7 @@ def diff_subcommand(args) -> int:
     if divergences:
         print(format_mismatch_block(divergences))
         return 1
-    print("build metadata matches — preflight and post-edit used the same "
+    print("build metadata matches — loci-plan and post-edit used the same "
           "compiler and flags")
     return 0
 
@@ -1400,7 +1400,7 @@ def print_subcommand(args) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="build-metadata",
-        description="LOCI build metadata — record compiler/flags for preflight "
+        description="LOCI build metadata — record compiler/flags for loci-plan "
                     "and verify the post-edit rebuild matches.",
     )
     sub = parser.add_subparsers(dest="cmd", required=True)
