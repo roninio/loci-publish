@@ -122,8 +122,9 @@ If no `.o` exists yet, fall through to full compilation.
    echo "<chunk>" | <venv-python> <plugin-dir>/lib/api_client.py exec-behavior \
        --architecture <timing_architecture>
    ```
-   `<timing_architecture>` is the value from step 2's JSON output (`A53`,
-   `CortexM4`, `CortexM0P`, `TC399`). Run the chunk calls concurrently
+   `<timing_architecture>` is the value from step 2's JSON output (one of
+   `aarch64`, `armv7e-m`, `armv6-m`, `tc399`) — pass it **verbatim**, do not
+   translate it to CPU marketing names. Run the chunk calls concurrently
    (background Bash calls in a single response, then wait) rather than
    strictly sequentially. Concatenate the result CSVs (skip duplicate
    headers) before reporting.

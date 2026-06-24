@@ -19,6 +19,8 @@ Without running code. No instrumentation. No code changes.
 | Compiled binaries | `.elf` / `.o` / `.axf` | all skills |
 | Network access to `https://app.auroralabs.com` | — | `exec-trace`, `loci-plan`, `loci-post-edit` |
 
+> **Windows:** LOCI is a POSIX-shell plugin. Run all LOCI commands inside **Git Bash** (MSYS2/MINGW) — never PowerShell or cmd. PowerShell mangles quotes, heredocs, and `$` expansion before bash sees them, and uses `C:\…` paths that Git Bash cannot resolve (use `/c/…`). Configure Git Bash as your agent's terminal/shell on Windows.
+
 **Cross-compiler** (one required, depending on your target):
 
 | Target | Compiler |

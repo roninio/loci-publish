@@ -55,12 +55,12 @@ Examples
   # One chunk from the skill, via stdin:
   jq -c '.timing_csv_chunks[]' .loci-build/extract.json | while read -r CHUNK; do
     echo "$CHUNK" | <venv-python> <plugin-dir>/lib/api_client.py exec-behavior \
-        --architecture A53
+        --architecture armv6-m
   done
 
   # From a file inside the working directory:
   <venv-python> <plugin-dir>/lib/api_client.py exec-behavior \
-      --architecture CortexM4 --csv-file .loci-build/chunk_0.csv
+      --architecture armv7e-m --csv-file .loci-build/chunk_0.csv
 """
 
 from __future__ import annotations
@@ -271,7 +271,8 @@ def main() -> int:
         help="POST a single timing CSV chunk to get_assembly_block_exec_behavior",
     )
     eb.add_argument("--architecture", required=True,
-                    help="timing_architecture from extract-assembly (A53, CortexM4, CortexM0P, TC399)")
+                    help="timing_architecture from extract-assembly, passed verbatim "
+                         "(aarch64, armv7e-m, armv6-m, tc399)")
     eb.add_argument("--csv-file",
                     help="read the CSV chunk from a file inside the working dir (e.g. .loci-build/...). "
                          "NEVER /tmp/ — Claude Code prompts on every out-of-project access. "
