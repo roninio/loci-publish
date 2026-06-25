@@ -1,0 +1,56 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/session-init.sh",
+            "windows": "bash -lc './hooks/session-init.sh'",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|create_file|replace_string_in_file|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "export PYTHONIOENCODING=utf-8; VENV_PY=\"$(./hooks/find-venv-python.sh 2>/dev/null || true)\"; [ -n \"$VENV_PY\" ] && [ -x \"$VENV_PY\" ] && \"$VENV_PY\" ./hooks/preflight_check.py || true",
+            "windows": "bash -lc 'export PYTHONIOENCODING=utf-8; VENV_PY=\"$(./hooks/find-venv-python.sh 2>/dev/null || true)\"; [ -n \"$VENV_PY\" ] && [ -x \"$VENV_PY\" ] && \"$VENV_PY\" ./hooks/preflight_check.py || true'",
+            "timeout": 8,
+            "statusMessage": "LOCI - execution-aware analysis..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|create_file|replace_string_in_file|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "export PYTHONIOENCODING=utf-8; VENV_PY=\"$(./hooks/find-venv-python.sh 2>/dev/null || true)\"; [ -n \"$VENV_PY\" ] && [ -x \"$VENV_PY\" ] && \"$VENV_PY\" ./hooks/post_edit_reminder.py || true",
+            "windows": "bash -lc 'export PYTHONIOENCODING=utf-8; VENV_PY=\"$(./hooks/find-venv-python.sh 2>/dev/null || true)\"; [ -n \"$VENV_PY\" ] && [ -x \"$VENV_PY\" ] && \"$VENV_PY\" ./hooks/post_edit_reminder.py || true'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "export PYTHONIOENCODING=utf-8; VENV_PY=\"$(./hooks/find-venv-python.sh 2>/dev/null || true)\"; [ -n \"$VENV_PY\" ] && [ -x \"$VENV_PY\" ] && \"$VENV_PY\" ./lib/loci_stats.py flush-impacts || true",
+            "windows": "bash -lc 'export PYTHONIOENCODING=utf-8; VENV_PY=\"$(./hooks/find-venv-python.sh 2>/dev/null || true)\"; [ -n \"$VENV_PY\" ] && [ -x \"$VENV_PY\" ] && \"$VENV_PY\" ./lib/loci_stats.py flush-impacts || true'",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

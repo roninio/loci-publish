@@ -33,15 +33,64 @@ _SOURCE_EXTS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hpp", ".hxx", ".rs"}
 _HEADER_EXTS = {".h", ".hpp", ".hxx"}
 
 
+def _extract_file_paths(tool_name: str, tool_input: dict) -> list[str]:
+    """Best-effort file path extraction for Claude and VS Code tool payloads."""
+    if not isinstance(tool_input, dict):
+        return []
+
+    paths: list[str] = []
+    for key in ("file_path", "filePath", "path"):
+        val = tool_input.get(key)
+        if isinstance(val, str) and val:
+            paths.append(val)
+
+    if tool_name == "apply_patch":
+        patch_text = tool_input.get("input", "")
+        if isinstance(patch_text, str):
+            for ln in patch_text.splitlines():
+                if ln.startswith("*** Update File: "):
+                    paths.append(ln.replace("*** Update File: ", "", 1).strip())
+                elif ln.startswith("*** Add File: "):
+                    paths.append(ln.replace("*** Add File: ", "", 1).strip())
+
+    # Preserve order but dedupe
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for p in paths:
+        if p not in seen:
+            seen.add(p)
+            deduped.append(p)
+    return deduped
+
+
 def _extract_edit_content(tool_name: str, tool_input: dict) -> str:
     """Pull the newly inserted content from whichever write-family tool fired."""
+    # Claude-style tools
     if tool_name == "Write":
         return tool_input.get("content", "") or ""
     if tool_name == "Edit":
-        return tool_input.get("new_string", "") or ""
+        return tool_input.get("new_string", "") or tool_input.get("newString", "") or ""
     if tool_name == "MultiEdit":
         edits = tool_input.get("edits", []) or []
-        return "\n".join((e.get("new_string", "") or "") for e in edits)
+        return "\n".join((e.get("new_string", "") or e.get("newString", "") or "") for e in edits)
+
+    # VS Code/Copilot tool names
+    if tool_name == "create_file":
+        return tool_input.get("content", "") or ""
+    if tool_name == "replace_string_in_file":
+        return (
+            tool_input.get("newString", "")
+            or tool_input.get("new_string", "")
+            or tool_input.get("replacement", "")
+            or ""
+        )
+    if tool_name == "apply_patch":
+        patch_text = tool_input.get("input", "")
+        if not isinstance(patch_text, str):
+            return ""
+        added = [ln[1:] for ln in patch_text.splitlines() if ln.startswith("+") and not ln.startswith("+++")]
+        return "\n".join(added)
+
     return ""
 
 
@@ -94,38 +143,44 @@ def main():
     tool_input = data.get("tool_input", {})
     hook_event = data.get("hook_event_name", "PostToolUse")
 
-    # Extract file path from the tool input
-    file_path = tool_input.get("file_path", "")
+    file_paths = _extract_file_paths(tool_name, tool_input)
+    file_path = file_paths[0] if file_paths else ""
     loci_log.info("post-edit",
                   f"start: {hook_event} hook (tool={tool_name} file={file_path or '?'})")
     atexit.register(lambda: loci_log.info("post-edit", f"end: {hook_event} hook"))
-    if not file_path:
+    if not file_paths:
         sys.exit(0)
 
-    # Skip non-source files
-    _, ext = os.path.splitext(file_path)
-    ext = ext.lower()
-    if ext not in _SOURCE_EXTS:
-        sys.exit(0)
-
-    # Skip plan files and configs that happen to have source extensions
+    source_paths: list[str] = []
     skip_patterns = (".claude/plans/", ".claude/settings")
-    normalized = file_path.replace("\\", "/")
-    if any(p in normalized for p in skip_patterns):
+    for p in file_paths:
+        _, ext = os.path.splitext(p)
+        ext = ext.lower()
+        if ext not in _SOURCE_EXTS:
+            continue
+        normalized = p.replace("\\", "/")
+        if any(s in normalized for s in skip_patterns):
+            continue
+        source_paths.append(p)
+
+    if not source_paths:
         sys.exit(0)
 
     # Skip edits that cannot produce a measurable compiled diff — header
     # files, #include-only changes, typedef/macro/global-only changes.
     code = _extract_edit_content(tool_name, tool_input)
-    if _is_no_measurement_edit(code, ext):
+    _, first_ext = os.path.splitext(source_paths[0])
+    if _is_no_measurement_edit(code, first_ext.lower()):
         sys.exit(0)
 
-    basename = os.path.basename(file_path)
+    basenames = ", ".join(os.path.basename(p) for p in source_paths[:3])
+    if len(source_paths) > 3:
+        basenames += ", ..."
     output = {
         "hookSpecificOutput": {
             "hookEventName": "PostToolUse",
             "additionalContext": (
-                f"[loci] {basename} was modified. "
+                f"[loci] {basenames} was modified. "
                 "You MUST invoke the loci:loci-post-edit skill NOW — "
                 "do not proceed to the next edit or respond to the user first. "
                 "EXCEPTION: if this edit was made as part of a loci-plan pass "

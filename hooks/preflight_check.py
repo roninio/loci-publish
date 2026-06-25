@@ -98,15 +98,51 @@ def _check_call_graph(lines: list[str], func_name: str) -> list[Finding]:
 
 def extract_code(tool_name: str, tool_input: dict) -> Optional[str]:
     """Pull the incoming code text from whichever write-family tool fired."""
+    # Claude-style tools
     if tool_name == "Write":
         return tool_input.get("content", "")
     if tool_name in ("Edit", "MultiEdit"):
         # new_string is the content being inserted
         if tool_name == "Edit":
-            return tool_input.get("new_string", "")
+            return tool_input.get("new_string", "") or tool_input.get("newString", "")
         edits = tool_input.get("edits", [])
-        return "\n".join(e.get("new_string", "") for e in edits)
+        return "\n".join((e.get("new_string", "") or e.get("newString", "")) for e in edits)
+
+    # VS Code/Copilot tool names
+    if tool_name == "create_file":
+        return tool_input.get("content", "")
+    if tool_name == "apply_patch":
+        patch_text = tool_input.get("input", "")
+        if not patch_text:
+            return None
+        added = [ln[1:] for ln in patch_text.splitlines() if ln.startswith("+") and not ln.startswith("+++")]
+        return "\n".join(added)
+
     return None
+
+
+def _extract_primary_file_path(tool_name: str, tool_input: dict) -> str:
+    """Best-effort file path extraction for Claude and VS Code tool payloads."""
+    if not isinstance(tool_input, dict):
+        return ""
+
+    # Common fields (snake_case + camelCase)
+    for key in ("file_path", "filePath", "path"):
+        val = tool_input.get(key)
+        if isinstance(val, str) and val:
+            return val
+
+    # apply_patch: parse first changed file from patch header
+    if tool_name == "apply_patch":
+        patch_text = tool_input.get("input", "")
+        if isinstance(patch_text, str):
+            for ln in patch_text.splitlines():
+                if ln.startswith("*** Update File: "):
+                    return ln.replace("*** Update File: ", "", 1).strip()
+                if ln.startswith("*** Add File: "):
+                    return ln.replace("*** Add File: ", "", 1).strip()
+
+    return ""
 
 
 def find_new_functions(code: str) -> list[tuple[str, list[str]]]:
@@ -244,14 +280,14 @@ def main():
     tool_name  = data.get("tool_name", "")
     tool_input = data.get("tool_input", {})
     hook_event = data.get("hook_event_name", "PreToolUse")
-    file_path_for_log = tool_input.get("file_path", "?") if isinstance(tool_input, dict) else "?"
+    file_path = _extract_primary_file_path(tool_name, tool_input)
+    file_path_for_log = file_path or "?"
     loci_log.info("preflight",
                   f"start: {hook_event} hook (tool={tool_name} file={file_path_for_log})")
     import atexit
     atexit.register(lambda: loci_log.info("preflight", f"end: {hook_event} hook"))
 
     # Skip non-source-code files (plan files, markdown, configs)
-    file_path = tool_input.get("file_path", "")
     if file_path:
         skip_patterns = (".claude/plans/", ".md", ".json", ".yml", ".yaml", ".toml")
         if any(p in file_path.replace("\\", "/") for p in skip_patterns):
