@@ -33,16 +33,23 @@ test -n "$LOCI_API_KEY" \
   || echo "no LOCI_API_KEY"
 ```
 
-If neither has a token, stop and ask the user for one:
+If neither has a token, stop and ask the user to paste one:
 
 > No `LOCI_API_KEY` found. Log in at https://app.auroralabs.com to retrieve
-> your LOCI API token, then provide it. Either export it
-> (`export LOCI_API_KEY=sk-loci-...`) or create `.loci/config.json` in this
-> project with `{ "LOCI_API_KEY": "sk-loci-..." }`, then re-run `/init`.
+> your LOCI API token, then paste it here and I'll save it to
+> `.loci/config.json` for this project.
 
-Wait for the user to supply the token; do not proceed to setup without one.
-Do not embed the token on any command line or write it to git. The `.loci`
-folder is git-ignored by setup. Do not run setup until a token is reachable.
+When the user pastes the token, write it to `.loci/config.json` for them
+(create the folder if needed) — never make the user edit files by hand:
+
+```
+mkdir -p .loci && jq -n --arg k "<pasted-token>" '{LOCI_API_KEY: $k}' > .loci/config.json
+```
+
+The token helper reads `.loci/config.json` (key `"LOCI_API_KEY"`). Wait for
+the user to supply the token; do not proceed to setup without one. Never echo
+the token back or commit it to git. The `.loci` folder is git-ignored by
+setup. Do not run setup until a token is reachable.
 
 ## Step 2: Run setup per OS
 
