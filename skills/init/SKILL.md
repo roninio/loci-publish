@@ -33,12 +33,14 @@ test -n "$LOCI_API_KEY" \
   || echo "no LOCI_API_KEY"
 ```
 
-If neither has a token, stop and tell the user:
+If neither has a token, stop and ask the user for one:
 
-> No `LOCI_API_KEY` found. Either export it (`export LOCI_API_KEY=sk-loci-...`)
-> or create `.loci/config.json` in this project with
-> `{ "LOCI_API_KEY": "sk-loci-..." }`, then re-run `/init`.
+> No `LOCI_API_KEY` found. Log in at https://app.auroralabs.com to retrieve
+> your LOCI API token, then provide it. Either export it
+> (`export LOCI_API_KEY=sk-loci-...`) or create `.loci/config.json` in this
+> project with `{ "LOCI_API_KEY": "sk-loci-..." }`, then re-run `/init`.
 
+Wait for the user to supply the token; do not proceed to setup without one.
 Do not embed the token on any command line or write it to git. The `.loci`
 folder is git-ignored by setup. Do not run setup until a token is reachable.
 

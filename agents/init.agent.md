@@ -14,7 +14,7 @@ All LOCI commands are POSIX `bash`. On Windows, run them inside **Git Bash** (MS
 
 ## Required Workflow
 1. Read [skills/init/SKILL.md](../skills/init/SKILL.md) first.
-2. Verify a LOCI token is reachable (`$LOCI_API_KEY` or `.loci/config.json`); stop and ask the user if missing.
+2. Verify a LOCI token is reachable (`$LOCI_API_KEY` or `.loci/config.json`); if missing, stop and direct the user to log in at https://app.auroralabs.com to retrieve their token, then wait for them to provide it.
 3. Run `<plugin-dir>/setup/setup.sh` via bash — Git Bash on Windows, native bash on macOS/Linux — from the project root so all state lands in `.loci`.
 
 ## Output

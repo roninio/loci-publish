@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "loci",
-  "version": "0.1.92",
+  "version": "0.1.94",
   "description": "Execution-aware analysis for C/C++/Rust — hardware-grounded timing, energy, stack depth, memory, and security from compiled binaries. Real silicon traces, not simulated.",
   "author": {
     "name": "AuroraLabs Ltd",
