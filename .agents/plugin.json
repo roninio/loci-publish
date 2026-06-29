@@ -52,6 +52,7 @@
     "./skills/control-flow",
     "./skills/exec-trace",
     "./skills/help",
+    "./skills/init",
     "./skills/loci-plan",
     "./skills/loci-post-edit",
     "./skills/memory-report",

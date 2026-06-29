@@ -1,5 +1,5 @@
 ---
-name: "LOCI loci-plan"
+name: "LOCI plan"
 description: "Use in planning for new logic, implementation, modification, refactor, guards, or feature work to check control-flow, timing, and energy before edits. Mirrors skills/loci-plan/SKILL.md."
 tools: [read, search, execute]
 argument-hint: "[planned change]"
