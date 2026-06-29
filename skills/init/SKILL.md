@@ -58,36 +58,20 @@ setup. Do not run setup until a token is reachable.
 ## Step 1b: Smoke-test the token
 
 Once a token is ready, verify it actually authenticates before running setup.
-Write a small probe script inside the project (never `/tmp`) and run it with
-bash — Git Bash on Windows. It pings the LOCI endpoint's `initialize` method
-and branches on the HTTP status:
+A bundled probe script lives at `<plugin-dir>/skills/init/test-token.sh` — run
+it from the project root with bash (Git Bash on Windows). It resolves the
+token from `$LOCI_API_KEY` or `.loci/config.json`, pings the LOCI endpoint's
+`initialize` method, and prints the result without ever echoing the token:
 
 ```
-mkdir -p .loci-build && cat > .loci-build/test-token.sh <<'EOF'
-#!/usr/bin/env bash
-TOKEN="${LOCI_API_KEY:-$(jq -r '.LOCI_API_KEY // empty' .loci/config.json 2>/dev/null)}"
-[ -n "$TOKEN" ] || { echo "no token"; exit 3; }
-CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST https://mcp.auroralabs.com/mcp/v1 \
-  -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json, text/event-stream' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"loci-init","version":"1"}}}')
-case "$CODE" in
-  2*)       echo "token OK ($CODE)";        exit 0 ;;
-  401|403)  echo "token rejected ($CODE)";  exit 4 ;;
-  429)      echo "token OK but quota reached ($CODE)"; exit 0 ;;
-  000)      echo "network error";           exit 6 ;;
-  *)        echo "unexpected status $CODE";  exit 5 ;;
-esac
-EOF
-bash .loci-build/test-token.sh
+bash <plugin-dir>/skills/init/test-token.sh
 ```
 
-Branch on the result: `token OK` → continue to Step 2. `token rejected` →
-the token is invalid; re-prompt the user for a fresh one from
-https://app.auroralabs.com and rewrite `.loci/config.json`. `network error`
-→ report it and skip the smoke-test, but still allow setup. Never print the
-token itself.
+Branch on its exit code: `0` (token OK) → continue to Step 2. `4` (token
+rejected) → the token is invalid; re-prompt the user for a fresh one from
+https://app.auroralabs.com and rewrite `.loci/config.json`. `3` (no token) →
+go back to the token prompt above. `6` (network error) → report it and skip
+the smoke-test, but still allow setup.
 
 ## Step 2: Run setup per OS
 
