@@ -25,15 +25,19 @@ setup script is at `<plugin-dir>/setup/setup.sh`.
 ## Step 1: Verify a LOCI token
 
 The token resolves from `$LOCI_API_KEY`, else from `.loci/config.json` (key
-`"LOCI_API_KEY"`) in the project working directory. Check both:
+`"LOCI_API_KEY"`) in the project working directory. If the `.loci` folder
+does not exist, there is no config file — go straight to asking the user for
+the token. Otherwise check both sources:
 
 ```
-test -n "$LOCI_API_KEY" \
-  || jq -e 'has("LOCI_API_KEY") and (.LOCI_API_KEY | length > 0)' .loci/config.json >/dev/null 2>&1 \
+test -d .loci \
+  && { test -n "$LOCI_API_KEY" \
+       || jq -e 'has("LOCI_API_KEY") and (.LOCI_API_KEY | length > 0)' .loci/config.json >/dev/null 2>&1; } \
   || echo "no LOCI_API_KEY"
 ```
 
-If neither has a token, stop and ask the user to paste one:
+If `.loci` is missing or neither source has a token, stop and ask the user to
+paste one:
 
 > No `LOCI_API_KEY` found. Log in at https://app.auroralabs.com to retrieve
 > your LOCI API token, then paste it here and I'll save it to
